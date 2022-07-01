@@ -20,52 +20,69 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 const taskCollection = client.db("to-do-list").collection("task");
 const taskCompletedCollection = client.db("to-do-list").collection("task-complete");
 
-async function run(){
-    try{
+async function run() {
+    try {
         await client.connect()
 
-        app.post('/task', async (req, res)=>{
+        app.post('/task', async (req, res) => {
             const task = req.body;
             console.log(task)
             // const quote = {task: task}
             // console.log(quote)
             const exist = await taskCollection.findOne(task)
-            if(exist){
-                return res.send({success: false, task: exist})
+            if (exist) {
+                return res.send({ success: false, task: exist })
             }
-                const result = await taskCollection.insertOne(task)
-                return res.send({success: true, result})            
+            const result = await taskCollection.insertOne(task)
+            return res.send({ success: true, result })
         })
 
-        app.get('/task', async(req, res)=>{
+        app.get('/task', async (req, res) => {
             const result = await taskCollection.find().toArray();
             res.send(result)
         })
 
-        app.post('/taskComplete', async (req, res)=>{
+        app.delete('/task/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id)
+            const query = { _id: ObjectId(id)}
+            const result = await taskCollection.deleteOne(query);
+            res.send(result)
+        })
+
+        app.post('/taskComplete', async (req, res) => {
             const id = req.body;
             // console.log(id)
             // const result = await taskCompletedCollection.insertOne(task)
             // res.send(result)
-            const query = {_id: ObjectId(id)}
+            const query = { _id: ObjectId(id) }
             const task = await taskCollection.findOne(query)
-            console.log(task)
-
+            const result = await taskCompletedCollection.insertOne(task)
+            res.send(result)
         })
-
+        
+        app.get('/taskComplete', async (req, res)=>{
+            const result = await taskCompletedCollection.find().toArray();
+            res.send(result)
+        })
+    
+    
+    
+    
+    
     }
-    finally{
+    finally {
         //This is finally
     }
 }
 
 run().catch(console.dir);
 
-app.get('/', (req, res)=>{
+app.get('/', (req, res) => {
     res.send('Task Server Connected')
 })
 
 
-app.listen(port, ()=>{
+app.listen(port, () => {
     console.log('Task server run with', port);
 })
