@@ -37,6 +37,20 @@ async function run() {
             return res.send({ success: true, result })
         })
 
+        app.put('/task/:id', async (req, res) => {
+            const id = req.params.id;
+            const task = req.body;
+            const filter = {_id: ObjectId(id)}
+            const options = {upsert: true}
+            const updateTask = {
+               $set: {task: task}
+            }
+            const result = await taskCollection.updateOne(filter, options, updateTask)
+            res.send(result)
+            console.log(result)
+
+        })
+
         app.get('/task', async (req, res) => {
             const result = await taskCollection.find().toArray();
             res.send(result)
@@ -47,6 +61,14 @@ async function run() {
             console.log(id)
             const query = { _id: ObjectId(id)}
             const result = await taskCollection.deleteOne(query);
+            res.send(result)
+        })
+
+        app.delete('/taskComplete/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id)
+            const query = { _id: ObjectId(id)}
+            const result = await taskCompletedCollection.deleteOne(query);
             res.send(result)
         })
 
